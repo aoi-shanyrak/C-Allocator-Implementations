@@ -1,4 +1,4 @@
-#include "custom-alloc.h"
+#include "sppool_alloc.h"
 #undef malloc
 #undef free
 
@@ -83,7 +83,7 @@ void ensure_arenas_initialized() {
 #define ALIGN(SIZE) (((((SIZE) - 1) / 8) + 1) * 8)
 #define MIN_BLOCK_SIZE_IN_LARGE 128
 
-void* custom_malloc(size_t size) {
+void* sppool_malloc(size_t size) {
   ensure_arenas_initialized();
   if (!arenas_initialized)
     return NULL;
@@ -133,7 +133,7 @@ void* custom_malloc(size_t size) {
 #define IS_PTR_IN_ARENA(PTR, ARENA) (((ARENA).start <= (byte*) (PTR)) && ((byte*) (PTR) < (ARENA).end))
 #define IS_ALIGNED_PTR(PTR, ARENA) (((size_t) ((byte*) (PTR) - (ARENA).start) % (ARENA).block_size) == 0)
 
-void custom_free(void* ptr) {
+void sppool_free(void* ptr) {
   ensure_arenas_initialized();
   if (!arenas_initialized)
     return;
@@ -156,14 +156,14 @@ void custom_free(void* ptr) {
   }
 }
 
-void* custom_realloc(void* ptr, size_t size) {
+void* sppool_realloc(void* ptr, size_t size) {
   ensure_arenas_initialized();
   if (!arenas_initialized)
     return NULL;
   if (ptr == NULL)
-    return custom_malloc(size);
+    return sppool_malloc(size);
   if (size == 0) {
-    custom_free(ptr);
+    sppool_free(ptr);
     return NULL;
   }
   size_t cur_bs = 0;
@@ -179,14 +179,14 @@ void* custom_realloc(void* ptr, size_t size) {
   }
   if (cur_bs >= size)
     return ptr;
-  byte* new_ptr = custom_malloc(size);
+  byte* new_ptr = sppool_malloc(size);
   if (new_ptr)
     memcpy(new_ptr, ptr, cur_bs);
-  custom_free(ptr);
+  sppool_free(ptr);
   return new_ptr;
 }
 
-void* custom_calloc(size_t nmemb, size_t size) {
+void* sppool_calloc(size_t nmemb, size_t size) {
   ensure_arenas_initialized();
   if (!arenas_initialized)
     return NULL;
@@ -195,7 +195,7 @@ void* custom_calloc(size_t nmemb, size_t size) {
   if (nmemb > SIZE_MAX / size)
     return NULL;
   size_t total_size = nmemb * size;
-  byte* ptr = custom_malloc(total_size);
+  byte* ptr = sppool_malloc(total_size);
   if (ptr)
     memset(ptr, 0, total_size);
   return ptr;
