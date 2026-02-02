@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -O0 -std=c11
+CFLAGS = -Wall -Wextra -g -O0 -std=c11 -Isrc
 SANITIZERS = -fsanitize=address,undefined,leak
 
 KR_TEST = test_kr
@@ -7,17 +7,17 @@ SPPOOL_TEST = test_sppool
 
 all: $(KR_TEST) $(SPPOOL_TEST)
 
-$(KR_TEST): tester.c kr_alloc.c kr_alloc.h
+$(KR_TEST): src/tester.c src/kr_alloc.c src/kr_alloc.h
 	$(CC) $(CFLAGS) -DTEST_KR_ALLOC -o $@ $^
 
-$(SPPOOL_TEST): tester.c sppool_alloc.c sppool_alloc.h
+$(SPPOOL_TEST): src/tester.c src/sppool_alloc.c src/sppool_alloc.h
 	$(CC) $(CFLAGS) -o $@ $^
 
-asan_kr: tester.c kr_alloc.c kr_alloc.h
+asan_kr: src/tester.c src/kr_alloc.c src/kr_alloc.h
 	$(CC) $(CFLAGS) $(SANITIZERS) -DTEST_KR_ALLOC -o test_kr_asan $^
 	@./test_kr_asan
 
-asan_sppool: tester.c sppool_alloc.c sppool_alloc.h
+asan_sppool: src/tester.c src/sppool_alloc.c src/sppool_alloc.h
 	$(CC) $(CFLAGS) $(SANITIZERS) -o test_sppool_asan $^
 	@./test_sppool_asan
 
