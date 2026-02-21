@@ -117,8 +117,8 @@ void* sppool_malloc(size_t size) {
 
         new_block->is_free = 1;
         new_block->size = current_block->size - sizeof(large_block) - aligned_size;
-        new_block->next_block = large_arena.list_of_blocks;
-        large_arena.list_of_blocks = new_block;
+        new_block->next_block = current_block->next_block;
+        current_block->next_block = new_block;
 
         current_block->size = aligned_size;
       }
@@ -151,8 +151,6 @@ void sppool_free(void* ptr) {
     large_block* block = (large_block*) ((byte*) ptr - sizeof(large_block));
 
     block->is_free = 1;
-    block->next_block = large_arena.list_of_blocks;
-    large_arena.list_of_blocks = block;
   }
 }
 
